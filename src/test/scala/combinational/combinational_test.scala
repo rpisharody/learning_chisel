@@ -7,7 +7,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import math.pow
 
 class DecoderTests extends AnyFreeSpec with ChiselScalatestTester {
-  // Testing multiple Encoders !
+  // Testing multiple Decoders !
   for (bb <- 1 until 5) {
     s"$bb-Bit Decoder" in {
       test(new Decoder(bb)) { c =>
@@ -29,6 +29,22 @@ class FourBitEncoderTests extends AnyFreeSpec with ChiselScalatestTester {
         val in_val = 1 << in
         c.io.in.poke(in_val.U)
         c.io.out.expect(in.U)
+      }
+    }
+  }
+}
+
+class EncoderTests extends AnyFreeSpec with ChiselScalatestTester {
+  // Testing multiple Encoders
+  for (bits <- 1 to 4) {
+    val enc_bits = pow(2, bits).toInt
+    s"$enc_bits-Bit Encoder" in {
+      test(new Encoder(enc_bits)) { c =>
+        for (in <- 0 until enc_bits) {
+          val in_val = 1 << in
+          c.io.in.poke(in_val.U)
+          c.io.out.expect(in.U)
+        }
       }
     }
   }
