@@ -1,7 +1,7 @@
 package combinational
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{log2Ceil, switch, is}
 import math.pow
 
 class Decoder(input_bit_width:Int = 2) extends Module {
@@ -46,4 +46,24 @@ class Encoder(input_bit_width:Int = 16) extends Module {
     enc_out(i) := Mux(io.in(i), i.U, 0.U) | enc_out(i - 1)
   }
   io.out := enc_out(inb - 1)
+}
+
+class Arbiter(n_bits:Int = 4) extends Module {
+  val io = IO(new Bundle {
+    val req = Input(UInt(n_bits.W))
+    val grant = Output(UInt(n_bits.W))
+  })
+
+  val req = VecInit(io.req.asBools)
+  val grant = VecInit.fill(n_bits)(false.B)
+  val notGranted = VecInit.fill(n_bits)(false.B)
+
+  grant(0) := req(0)
+  notGranted(0) := !grant(0)
+  for(i <- 1 until n_bits) {
+    grant(i) := req(i) && notGranted(i - 1)
+    notGranted(i) := !req(i) && notGranted(i - 1)
+  }
+
+  io.grant := grant.asUInt
 }
