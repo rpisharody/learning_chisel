@@ -67,3 +67,18 @@ class Arbiter(n_bits:Int = 4) extends Module {
 
   io.grant := grant.asUInt
 }
+
+class PriorityEncoder(n_bits:Int = 16) extends Module {
+  val outb = log2Ceil(n_bits)
+  val io = IO(new Bundle {
+    val in = Input(UInt(n_bits.W))
+    val out = Output(UInt(outb.W))
+  })
+
+  val arb = Module(new Arbiter(n_bits))
+  val enc = Module(new Encoder(n_bits))
+
+  arb.io.req <> io.in
+  arb.io.grant <> enc.io.in
+  io.out <> enc.io.out
+}
